@@ -1,0 +1,40 @@
+[project]
+name = "lamp-py1"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes (undefined names, unused imports)
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade (modernise syntax automatically)
+    "B",    # flake8-bugbear (common bug patterns)
+    "SIM",  # flake8-simplify
+    "T20",  # flake8-print (catches print/pprint — forbidden in submissions)
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "SIM108", # ternary-operator suggestion — sometimes hurts readability
+]
+
+[tool.ruff.lint.per-file-ignores]
+"*_test.py" = ["T201", "T203"] # print() is fine in test files
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["*_test.py"]
