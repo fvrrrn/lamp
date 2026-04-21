@@ -108,7 +108,6 @@ class MergeableLinkedList2[T: SupportsDunderLT](LinkedList2[T]):
                         current1 = current1.next
 
 
-# 1.2.14.* Implement a linked list using dummy sentinel nodes (Stanford CS106B).
 class Node2[T: SupportsDunderLT]:
     def __init__(self, v: T) -> None:
         self.value: T = v
