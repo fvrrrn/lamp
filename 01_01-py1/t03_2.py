@@ -44,12 +44,42 @@ class DynArray2[T](DynArray[T]):
         super().insert(i, itm)
 
 
+class DimTraversal:
+    def navigate(self, root: DynArray, indices: Sequence[int]) -> tuple[DynArray, int]:
+        current = root
+        for idx in indices[:-1]:
+            current = current[idx]
+        return current, indices[-1]
+
+    def navigate_or_grow(
+        self,
+        root: DynArray,
+        indices: Sequence[int],
+        make_subarray,
+    ) -> tuple[DynArray, int]:
+        current = root
+        for depth, idx in enumerate(indices[:-1]):
+            if idx < 0:
+                raise IndexError("Index out of bounds")
+            while idx >= len(current):
+                current.append(make_subarray(depth))
+            current = current[idx]
+        last_idx = indices[-1]
+        if last_idx < 0:
+            raise IndexError("Index out of bounds")
+        while last_idx >= len(current):
+            current.append(None)
+        return current, last_idx
+
+
 # TASK: 1.3.6
 # TITLE: Multi-dimensional dynamic array with per-axis DynArray nesting
 # TIME COMPLEXITY: __init__ O(prod(level)), __getitem__ O(d), __setitem__ O(d) + growth
 # SPACE COMPLEXITY: O(prod(level)) initial; grows per __setitem__ calls
 # REFLECTION:
 #     Can overload __getitem__ so slices can be passed making it look like numpy array
+#     DimTraversal encapsulates the dimension traversal concept, used by both
+#     __getitem__ (plain navigate) and __setitem__ (navigate_or_grow).
 class MultiDynArray:
     def __init__(self, level: list[int]) -> None:
         if not level:
@@ -57,6 +87,7 @@ class MultiDynArray:
         self.dim = len(level)
         self.level = list(level)
         self.array = self.make_array(level, 0)
+        self._traversal = DimTraversal()
 
     def make_array(self, level: list[int], depth: int) -> DynArray:
         arr = DynArray()
@@ -72,30 +103,13 @@ class MultiDynArray:
     def __getitem__(self, indices: Sequence[int]) -> object:
         if len(indices) != self.dim:
             raise IndexError("Incorrect number of indices")
-        current = self.array
-        for i in range(len(indices)):
-            idx = indices[i]
-            if idx < 0 or idx >= len(current):
-                raise IndexError("Index out of bounds")
-            if i == self.dim - 1:
-                return current[idx]
-            current = current[idx]
-        return None
+        parent, last_idx = self._traversal.navigate(self.array, indices)
+        return parent[last_idx]
 
     def __setitem__(self, indices: Sequence[int], value: object) -> None:
         if len(indices) != self.dim:
             raise IndexError("Incorrect number of indices")
-        current = self.array
-        for i in range(len(indices)):
-            idx = indices[i]
-            if idx < 0:
-                raise IndexError("Index out of bounds")
-            while idx >= len(current):
-                if i == self.dim - 1:
-                    current.append(None)
-                else:
-                    current.append(self.make_array(self.level[i + 1 :], i + 1))
-            if i == self.dim - 1:
-                current.array[idx] = value
-            else:
-                current = current[idx]
+        parent, last_idx = self._traversal.navigate_or_grow(
+            self.array, indices, lambda depth: self.make_array(self.level[depth + 1:], depth + 1)
+        )
+        parent.array[last_idx] = value

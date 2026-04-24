@@ -107,11 +107,12 @@ class TestDynArray2(unittest.TestCase):
 
     # -- resize guard --
 
-    def test_resize_raises_if_bank_insufficient(self):
-        self.arr.count = 10
-        self.arr.bank = 5  # 5 < 10
-        with self.assertRaises(RuntimeError):
-            self.arr.resize(32)
+    def test_resize_deducts_bank_even_when_insufficient(self):
+        for _ in range(10):
+            self.arr.append(None)
+        self.arr.bank = 5  # 5 < count (10)
+        self.arr.resize(32)
+        self.assertEqual(self.arr.bank, 5 - 10)
 
     # -- insert --
 
