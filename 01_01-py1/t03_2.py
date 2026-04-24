@@ -3,6 +3,14 @@ from collections.abc import Sequence
 from t03 import DynArray
 
 
+class BankedResizePolicy:
+    def can_resize(self, bank: int, count: int) -> bool:
+        return bank >= count
+
+    def deduct(self, bank: int, count: int) -> int:
+        return bank - count
+
+
 # TASK: 1.3.5
 # TITLE: Dynamic array with amortized O(1) append proven by the bank method
 # TIME COMPLEXITY: append O(1) amortized, resize O(n), insert O(n)
@@ -13,17 +21,19 @@ from t03 import DynArray
 #     Here we do a proof that is append is actually O(1) because bank's grow is linear (+=)
 #     Let count be capacity/2, tokens before resizing accumulated is 2 * capacity/2
 #     Therefore, bank = count, and since bank is linear so is count, q.e.d.
+#     BankedResizePolicy separates the bank accounting from resize so that resize
+#     not violating Liskov's Substitution Principle,
+#     keeps the same preconditions as the parent (no RuntimeError added).
 class DynArray2[T](DynArray[T]):
     def __init__(self) -> None:
         super().__init__()
         self.bank = 0
         self.addition_factor = 2  # = self.resize_multiplier
+        self._resize_policy = BankedResizePolicy()
 
     def resize(self, new_capacity: int) -> None:
-        if self.bank < self.count:
-            raise RuntimeError("Not enough tokens")
+        self.bank = self._resize_policy.deduct(self.bank, self.count)
         super().resize(new_capacity)
-        self.bank -= self.count
 
     def append(self, itm: T) -> None:
         self.bank += self.addition_factor
