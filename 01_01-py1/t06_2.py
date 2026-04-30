@@ -53,7 +53,6 @@ def is_string_palindrome(text: str) -> bool:
     return True
 
 
-# 7.4.* Minimum element in O(1)
 # TASK: 1.6.4
 # TITLE: Deque with O(1) minimum via two parallel min stacks
 # TIME COMPLEXITY:
@@ -94,7 +93,6 @@ class MinDeque[T: SupportsDunderLT](Deque[T]):
         return self._sorted[0] if self._sorted else None
 
 
-# 7.5.* Deque backed by a dynamic array
 # TASK: 1.6.5
 # TITLE: Deque backed by a dynamic array with O(1) amortized add/remove
 # TIME COMPLEXITY:
@@ -142,7 +140,6 @@ class ArrayDeque[T]:
         return str(self.array)
 
 
-# 7.6.* Bracket balance check using a stack
 # TASK: 1.6.6
 # TITLE: Check balanced brackets in O(n) using a stack
 # TIME COMPLEXITY: O(n)
