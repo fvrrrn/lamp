@@ -1,7 +1,7 @@
 # ruff: noqa: N802
 import bisect
 from collections.abc import Iterator
-from typing import Any, Protocol, TypeVar
+from typing import Protocol, TypeVar
 
 from t03 import DynArray
 from t06 import Deque
@@ -32,7 +32,7 @@ class SupportsDunderLT(Protocol[_T_contra]):
 #     all four operations are O(1) regardless of which end is called "front".
 
 
-# TASK: 1.6.1
+# TASK: 1.6.2
 # TITLE: Tests for all four methods
 # ./t06_3.py
 
