@@ -36,6 +36,24 @@ class OrderedList[T: SupportsDunderLT]:
     def is_asc(self) -> bool:
         return self.__ascending
 
+    @property
+    def head(self) -> Node[T] | None:
+        maybe_node = self.__head.next
+        match maybe_node:
+            case _Sentinel():
+                return None
+            case Node():
+                return maybe_node
+
+    @property
+    def tail(self) -> Node[T] | None:
+        maybe_node = self.__head.next
+        match maybe_node:
+            case _Sentinel():
+                return None
+            case Node():
+                return maybe_node
+
     # just to be safe there won't be type errors because of Literal[-1, 0, 1]
     def compare(self, v1: T, v2: T) -> int:
         if v1 < v2:
