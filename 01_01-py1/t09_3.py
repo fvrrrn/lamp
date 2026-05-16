@@ -61,7 +61,7 @@ class TestOrderedDictionary(unittest.TestCase):
         self.assertEqual(d["a"], Nothing())
         self.assertEqual(len(d), 0)
 
-        self.assertEqual(d.__setitem__("b", 2), Nothing())
+        self.assertEqual(d.set("b", 2), Nothing())  # new key -> Nothing
         self.assertEqual(len(d), 1)
         self.assertEqual(d["b"], Just(2))
 
@@ -71,7 +71,7 @@ class TestOrderedDictionary(unittest.TestCase):
         self.assertEqual(d["a"], Just(1))
         self.assertEqual(d["c"], Just(3))
 
-        self.assertEqual(d.__setitem__("a", 10), Just(2))
+        self.assertEqual(d.set("a", 10), Just(0))  # "a" is at index 0 in sorted ["a","b","c"]
         self.assertEqual(d["a"], Just(10))
 
     def test_contains(self):
@@ -104,15 +104,15 @@ class TestBitDictionary(unittest.TestCase):
         d = BitDictionary[int]()
         d["000"] = 100
         d["001"] = 200
-        self.assertEqual(d["000"], 100)
-        self.assertEqual(d["001"], 200)
-        self.assertIsNone(d["010"])
+        self.assertEqual(d["000"], Just(100))
+        self.assertEqual(d["001"], Just(200))
+        self.assertEqual(d["010"], Nothing())
 
     def test_replacement(self):
         d = BitDictionary[int]()
         d["001"] = 1
         d["001"] = 2
-        self.assertEqual(d["001"], 2)
+        self.assertEqual(d["001"], Just(2))
         self.assertEqual(len(d), 1)
 
     def test_is_key(self):
@@ -133,9 +133,9 @@ class TestBitDictionary(unittest.TestCase):
     def test_del(self):
         d = BitDictionary[int]()
         d["key"] = 123
-        self.assertEqual(d["key"], 123)
+        self.assertEqual(d["key"], Just(123))
         del d["key"]
-        self.assertIsNone(d["key"])
+        self.assertEqual(d["key"], Nothing())
         self.assertEqual(len(d), 1)
 
 

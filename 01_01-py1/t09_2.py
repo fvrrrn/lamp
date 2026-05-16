@@ -1,6 +1,6 @@
 # ruff: noqa: RUF003
 from collections.abc import Callable, Iterator
-from typing import TYPE_CHECKING, Literal, TypeVar
+from typing import TYPE_CHECKING, Literal, Protocol, TypeVar
 
 if TYPE_CHECKING:
     from _typeshed import SupportsDunderLT
@@ -36,6 +36,14 @@ class Nothing: ...
 
 
 type Maybe[T] = Just[T] | Nothing
+
+
+class DictionaryProtocol[K, V](Protocol):
+    def set(self, key: K, value: V) -> Maybe[int]: ...
+    def __setitem__(self, key: K, value: V) -> None: ...
+    def __getitem__(self, key: K) -> Maybe[V]: ...
+    def __contains__(self, key: K) -> bool: ...
+    def __len__(self) -> int: ...
 
 
 # TODO: при каррировании функции теряется тип её параметров
@@ -92,7 +100,7 @@ class OrderedDictionary[K: SupportsDunderLT, V]:
             case Left():
                 return False
 
-    def __setitem__(self, key: K, value: V) -> Maybe[int]:
+    def set(self, key: K, value: V) -> Maybe[int]:
         match self.__binary_search(lambda t: self.__compare(t[0], key)):
             case Right(value=index):
                 self.tuples[index] = (key, value)
@@ -100,6 +108,9 @@ class OrderedDictionary[K: SupportsDunderLT, V]:
             case Left(value=index):
                 self.tuples.insert(index, (key, value))
                 return Nothing()
+
+    def __setitem__(self, key: K, value: V) -> None:
+        self.set(key, value)
 
     def __getitem__(self, key: K) -> Maybe[V]:
         match self.__binary_search(lambda t: self.__compare(t[0], key)):
@@ -118,12 +129,12 @@ class OrderedDictionary[K: SupportsDunderLT, V]:
             mid_index = (left + right) // 2
             t = self.tuples[mid_index]
             match predicate(t):
-                case -1:
-                    right = mid_index - 1
+                case -1:  # t[0] < key, target is to the right
+                    left = mid_index + 1
                 case 0:
                     return Right(mid_index)
-                case 1:
-                    left = mid_index + 1
+                case 1:  # t[0] > key, target is to the left
+                    right = mid_index - 1
         return Left(left)
 
     def __iter__(self) -> Iterator[tuple[K, V]]:
@@ -183,15 +194,22 @@ class BitDictionary[T]:
     def is_key(self, key: str) -> bool:
         return any(self.slots[index] == key for index in self.__slots_iter(key))
 
-    # TODO: add Maybe[int] after server tests
-    def put(self, key: str, value: T):
+    def set(self, key: str, value: T) -> Maybe[int]:
         if (index := self.seek_slot(key)) is not None:
             self.__size += self.slots[index] != key
             # TODO: with dynamic resizing change step on each self.size change
             # TODO: also __round_power_2
             self.slots[index] = key
             self.values[index] = value
-            return index
+            return Just(index)
+        return Nothing()
+
+    def put(self, key: str, value: T) -> int | None:
+        match self.set(key, value):
+            case Just(value=index):
+                return index
+            case Nothing():
+                return None
 
     def get(self, key: str) -> T | None:
         for index in self.__slots_iter(key):
@@ -201,11 +219,14 @@ class BitDictionary[T]:
     def __len__(self) -> int:
         return self.__size
 
-    def __setitem__(self, key: str, value: T) -> int | None:
-        return self.put(key, value)
+    def __setitem__(self, key: str, value: T) -> None:
+        self.set(key, value)
 
-    def __getitem__(self, key: str) -> T | None:
-        return self.get(key)
+    def __getitem__(self, key: str) -> Maybe[T]:
+        for index in self.__slots_iter(key):
+            if self.slots[index] == key:
+                return Just(self.values[index])  # type: ignore[arg-type]
+        return Nothing()
 
     def __delitem__(self, key: str) -> int | None:
         for index in self.__slots_iter(key):
