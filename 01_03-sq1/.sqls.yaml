@@ -1,0 +1,4 @@
+connections:
+  - name: dwarves
+    driver: sqlite3
+    dataSourceName: dwarves.db
