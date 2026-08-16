@@ -43,8 +43,6 @@ CREATE TABLE Relationships (
     PRIMARY KEY (dwarf_id, related_to)
 );
 
--- Squads and Dwarves reference each other (leader_id <-> squad_id).
--- Insert Dwarves with squad_id=NULL first, insert Squads, then update squad_id.
 INSERT INTO
     Dwarves (dwarf_id, name, age, profession)
 VALUES
@@ -63,13 +61,12 @@ VALUES
 INSERT INTO
     Squads
 VALUES
-    (1, 'Iron Hammers', 1),  -- Urist leads
-    (2, 'Stone Carvers', 4),  -- Sibrek leads
-    (3, 'Ghost Patrol', 8),  -- Kadol leads but is unassigned (no squad_id)
+    (1, 'Iron Hammers', 1),
+    (2, 'Stone Carvers', 4),
+    (3, 'Ghost Patrol', 8),
     (4, 'Liberaxi', NULL),  -- no leader
     (5, 'Guardians', 11);
 
--- squad with no leader
 UPDATE
     Dwarves
 SET
@@ -91,7 +88,6 @@ SET
 WHERE
     dwarf_id IN (11);
 
--- dwarves 3, 6, 7, 8 remain squad_id = NULL
 INSERT INTO
     Tasks
 VALUES
@@ -107,9 +103,6 @@ VALUES
     (10, 'Brew ale', NULL, 'pending'),
     (11, 'Chill', 11, 'pending');
 
--- weapon owners: 1(45), 4(67), 3(28)  avg = 46.67
--- armor owners:  2(32), 4(67), 7(22)  avg = 40.33
--- tool owners:   1(45), 5(51), NULL   avg = 48.0
 INSERT INTO
     Items
 VALUES
@@ -134,7 +127,7 @@ VALUES
     (6, 1, 'Друг'),
     (7, 3, 'Супруг'),
     (3, 7, 'Супруг'),
-    (8, 7, 'Супруг'),  -- why not?..
+    (8, 7, 'Супруг'),
     (2, 9, 'Родитель'),
     (1, 3, 'Родитель');
 
