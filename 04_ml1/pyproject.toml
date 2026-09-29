@@ -5,6 +5,7 @@ requires-python = "==3.13.*"
 dependencies = [
     "matplotlib>=3.11.2",
     # scikit-learn: pandas, matplotlib, numpy, scipy
+    "pandas>=3.0.6",
     "scikit-learn==1.9.0",
     "torch>=2.14.0",
     "torchvision>=0.29.0",
